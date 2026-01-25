@@ -41,7 +41,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
                   onPressed: () async {
                     if (playerId == null) return;
 
-                    channel = WebSocketChannel.connect(Uri.parse('ws://localhost:8080'),);
+                    channel = WebSocketChannel.connect(Uri.parse('ws://192.168.10.75:8080'),);
 
                     try {
                       await channel.ready;
