@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:eturn/BattleScreen/battlegame.dart';
@@ -6,7 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class BattleScreen extends StatefulWidget {
-  const BattleScreen({super.key, required this.channel});
+  const BattleScreen({super.key, required this.streamSubscription, required this.channel});
+  final StreamSubscription streamSubscription;
   final WebSocketChannel channel;
 
   @override
@@ -14,18 +16,14 @@ class BattleScreen extends StatefulWidget {
 }
 
 class _BattleScreenState extends State<BattleScreen> {
-  //late WebSocketChannel channel;
+  late WebSocketChannel channel;
   late BattleGame game;
 
   @override
   void initState() {
     super.initState();
     game = BattleGame();
-
-    widget.channel.stream.listen((data) {
-      final msg = jsonDecode(data);
-      game.applySnapshot(msg['snapshot']);
-    });
+    widget.streamSubscription.onData((s) => handleData(s));
   }
 
   @override
@@ -43,5 +41,10 @@ class _BattleScreenState extends State<BattleScreen> {
         child: const Icon(Icons.flash_on),
       ),
     );
+  }
+
+  void handleData(String data) {
+      final msg = jsonDecode(data);
+      game.applySnapshot(msg['snapshot']);
   }
 }

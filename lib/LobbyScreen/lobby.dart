@@ -97,8 +97,9 @@ class _LobbyScreenState extends State<LobbyScreen> {
             isConnectedToLobby = true;
           });
         case 'startBattle':
-          streamSubscription.cancel();
-          Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => BattleScreen(channel: channel,)));
+          //streamSubscription.cancel();
+          //streamSubscription.onData(handleData)
+          Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => BattleScreen(streamSubscription: streamSubscription, channel: channel,)));
         default:
       }
     } catch (e) {
