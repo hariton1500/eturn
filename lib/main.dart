@@ -1,4 +1,4 @@
-import 'package:eturn/BattleScreen/battlescreen.dart';
+import 'package:eturn/LobbyScreen/lobby.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -11,7 +11,7 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      home: BattleScreen(),
+      home: LobbyScreen(),
     );
   }
 }
