@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:eturn/BattleScreen/battlescreen.dart';
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -93,6 +94,8 @@ class _LobbyScreenState extends State<LobbyScreen> {
           setState(() {
             isConnectedToLobby = true;
           });
+        case 'startBattle':
+          Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => BattleScreen(channel: channel,)));
         default:
       }
     } catch (e) {

@@ -6,14 +6,15 @@ import 'package:flutter/material.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class BattleScreen extends StatefulWidget {
-  const BattleScreen({super.key});
+  const BattleScreen({super.key, required this.channel});
+  final WebSocketChannel channel;
 
   @override
   State<BattleScreen> createState() => _BattleScreenState();
 }
 
 class _BattleScreenState extends State<BattleScreen> {
-  late WebSocketChannel channel;
+  //late WebSocketChannel channel;
   late BattleGame game;
 
   @override
@@ -21,11 +22,7 @@ class _BattleScreenState extends State<BattleScreen> {
     super.initState();
     game = BattleGame();
 
-    channel = WebSocketChannel.connect(
-      Uri.parse('ws://localhost:8080'),
-    );
-
-    channel.stream.listen((data) {
+    widget.channel.stream.listen((data) {
       final msg = jsonDecode(data);
       game.applySnapshot(msg['snapshot']);
     });
@@ -37,7 +34,7 @@ class _BattleScreenState extends State<BattleScreen> {
       body: GameWidget(game: game),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          channel.sink.add(jsonEncode({
+          widget.channel.sink.add(jsonEncode({
             'cmd': 'attack',
             'shipId': 1,
             'targetId': 2,
