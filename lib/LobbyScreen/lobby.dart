@@ -67,7 +67,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
                 if (isConnectedToLobby && !isReady) ElevatedButton(onPressed: () {
                   setState(() {
                     isReady = !isReady;
-                    channel.sink.add({'type': 'ready', 'playerId': playerId, 'value': isReady});
+                    channel.sink.add(jsonEncode({'type': 'ready', 'playerId': playerId, 'value': isReady}));
                   });
                 }, child: Text(isReady ? 'Not Ready!' : 'Ready!'))
               ],
