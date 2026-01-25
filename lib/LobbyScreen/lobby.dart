@@ -16,7 +16,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
   TextEditingController? textEditingController;
   late WebSocketChannel channel;
   String? playerId;
-  bool isConnectedToLobby = false;
+  bool isConnectedToLobby = false, isReady = false;
   List<Map<String, dynamic>> players = [];
 
   @override
@@ -63,7 +63,13 @@ class _LobbyScreenState extends State<LobbyScreen> {
                   },
                   child: Text('connect')
                 ),
-                if (isConnectedToLobby) ... players.map((e) => Text(e.toString()))
+                if (isConnectedToLobby) ... players.map((e) => Text(e.toString())),
+                if (isConnectedToLobby && !isReady) ElevatedButton(onPressed: () {
+                  setState(() {
+                    isReady = !isReady;
+                    channel.sink.add({'type': 'ready', 'playerId': playerId, 'value': isReady});
+                  });
+                }, child: Text(isReady ? 'Not Ready!' : 'Ready!'))
               ],
             ),
           ),
