@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -19,6 +20,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
   String? playerId;
   bool isConnectedToLobby = false, isReady = false;
   List<Map<String, dynamic>> players = [];
+  late StreamSubscription streamSubscription;
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +57,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
                     // If `ready` completes without an error then the channel is ready to
                     // send data.
                     channel.sink.add(jsonEncode({'type': 'join_lobby', 'playerId': playerId}));
-                    channel.stream.listen((data) {
+                    streamSubscription = channel.stream.listen((data) {
                       final msg = jsonDecode(data);
                       print('[${DateTime.now()}] $msg');
                       handleLobbyIncomeMessages(msg, channel);
@@ -95,6 +97,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
             isConnectedToLobby = true;
           });
         case 'startBattle':
+          streamSubscription.cancel();
           Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => BattleScreen(channel: channel,)));
         default:
       }
