@@ -16,6 +16,8 @@ class _LobbyScreenState extends State<LobbyScreen> {
   TextEditingController? textEditingController;
   late WebSocketChannel channel;
   String? playerId;
+  bool isConnectedToLobby = false;
+  List<Map<String, dynamic>> players = [];
 
   @override
   Widget build(BuildContext context) {
@@ -28,14 +30,14 @@ class _LobbyScreenState extends State<LobbyScreen> {
           child: Center(
             child: Column(
               children: [
-                TextField(
+                if (!isConnectedToLobby) TextField(
                   controller: textEditingController,
                   onChanged: (value) {
                     playerId = value;
                   },
 
                 ),
-                ElevatedButton(
+                if (!isConnectedToLobby) ElevatedButton(
                   onPressed: () async {
                     if (playerId == null) return;
 
@@ -59,7 +61,9 @@ class _LobbyScreenState extends State<LobbyScreen> {
                       //game.applySnapshot(msg['snapshot']);
                     });
                   },
-                  child: Text('connect'))
+                  child: Text('connect')
+                ),
+                if (isConnectedToLobby) ... players.map((e) => Text(e.toString()))
               ],
             ),
           ),
@@ -73,9 +77,16 @@ class _LobbyScreenState extends State<LobbyScreen> {
       switch (msg['type']) {
         case 'lobby_state':
           final locked = msg['locked'];
-          
-
+          players.clear();
+          players.addAll((msg['players'] as List).map((e) => {'id': e['id'], 'ready': e['ready']}));// = msg['players'] as Map<String, dynamic>;
+          setState(() {
+            
+          });
           break;
+        case 'lobby_connected':
+          setState(() {
+            isConnectedToLobby = true;
+          });
         default:
       }
     } catch (e) {
