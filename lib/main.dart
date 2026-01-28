@@ -1,7 +1,10 @@
-import 'package:eturn/LobbyScreen/lobby.dart';
+import 'package:eturn/Screens/login.dart';
+import 'package:eturn/models/socket.dart';
 import 'package:flutter/material.dart';
 
 void main() {
+  final socket = SocketService();
+  socket.connect('ws://192.168.10.75:8080');
   runApp(const MainApp());
 }
 
@@ -11,7 +14,7 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      home: LobbyScreen(),
+      home: LoginScreen(),
     );
   }
 }

@@ -17,7 +17,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
 
   TextEditingController? textEditingController;
   late WebSocketChannel channel;
-  String? playerId;
+  String? playerId, password;
   bool isConnectedToLobby = false, isReady = false;
   List<Map<String, dynamic>> players = [];
   late StreamSubscription streamSubscription;
@@ -38,7 +38,12 @@ class _LobbyScreenState extends State<LobbyScreen> {
                   onChanged: (value) {
                     playerId = value;
                   },
-
+                ),
+                if (!isConnectedToLobby) TextField(
+                  //controller: textEditingController,
+                  onChanged: (value) {
+                    password = value;
+                  },
                 ),
                 if (!isConnectedToLobby) ElevatedButton(
                   onPressed: () async {
@@ -49,14 +54,14 @@ class _LobbyScreenState extends State<LobbyScreen> {
                     try {
                       await channel.ready;
                     } on SocketException catch (e) {
-                      // Handle the exception.
+                      return;// Handle the exception.
                     } on WebSocketChannelException catch (e) {
-                      // Handle the exception.
+                      return;// Handle the exception.
                     }
 
                     // If `ready` completes without an error then the channel is ready to
                     // send data.
-                    channel.sink.add(jsonEncode({'type': 'join_lobby', 'playerId': playerId}));
+                    channel.sink.add(jsonEncode({'category': 'connection', 'type': 'login', 'email': playerId, 'password': password}));
                     streamSubscription = channel.stream.listen((data) {
                       final msg = jsonDecode(data);
                       print('[${DateTime.now()}] $msg');
