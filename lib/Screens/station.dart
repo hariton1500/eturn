@@ -1,6 +1,5 @@
 import 'dart:async';
-
-import 'package:eturn/Screens/lobby.dart';
+import 'package:eturn/globals.dart';
 import 'package:eturn/models/socket.dart';
 import 'package:flutter/material.dart';
 
@@ -22,14 +21,12 @@ class _StationScreenState extends State<StationScreen> {
 
     sub = SocketService().stream.listen((event) {
       if (event['category'] == 'station' && event['type'] == 'state') {
-        setState(() {
-          state = event['data'];
-        });
+        loadFromDB(event['data']);
       }
     });
 
     //sending data request
-    sending['type'] = 'get state';
+    sending['type'] = 'get_state';
     SocketService().send(sending);
   }
 
@@ -52,5 +49,13 @@ class _StationScreenState extends State<StationScreen> {
         )
       ),
     );
+  }
+
+  void loadFromDB(Map<String, dynamic> data) async {
+    List<Map<String, dynamic>> request = await sb.from('players_progress').select().eq('player_id', data['player_id']);
+    print(request);
+    setState(() {
+      state = request[0];
+    });
   }
 }
