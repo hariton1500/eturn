@@ -44,7 +44,10 @@ class _FractionScreenState extends State<FractionScreen> {
                           var addingShip = (await sb.from('ships').select().eq('class_id', t['id']).eq('fraction_id', widget.f['id'])).first;
                           printD('adding $addingShip to hangar');
                           setState(() {
-                            myShips.add(addingShip);
+                            //myShips.add(addingShip);
+                            sb.from('players_ships').insert({'player_id': me?.id, 'ship_id': addingShip['id']}).select().then((ship) {
+                              myShips.add(ship.first);
+                            });
                           });
                         },
                         child: Text('add to hangar')

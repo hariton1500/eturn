@@ -11,12 +11,15 @@ class ShipScreen extends StatefulWidget {
 
 class _ShipScreenState extends State<ShipScreen> {
 
-  Map<String, dynamic> fit = {};
+  Map<String, List<int>> fit = {};
   List<Map<String, dynamic>> modules = [];
 
   @override
   void initState() {
     super.initState();
+    fit['high'] = List.filled(widget.ship['high'], -1);
+    fit['med'] = List.filled(widget.ship['med'], -1);
+    fit['low'] = List.filled(widget.ship['low'], -1);
     loadFromDB();
   }
 
@@ -29,8 +32,10 @@ class _ShipScreenState extends State<ShipScreen> {
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              Text(widget.ship.toString()),
+              //Text(widget.ship.toString()),
+              SizedBox(height: 50,),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
@@ -41,35 +46,35 @@ class _ShipScreenState extends State<ShipScreen> {
                         spacing: 10,
                         children: [
                           Text(m['name']),
-                          Container(
-                            decoration: BoxDecoration(
-                              border: Border.all()
-                            ),
-                            width: 30,
-                            height: 30,
-                            child: Text(m['id'].toString()),
-                          )
+                          picture(modules.indexOf(m))
                         ],
                       ))
                     ],
                   ),
                   Column(
+                    spacing: 10,
                     children: [
                       Row(
+                        spacing: 10,
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
+                          Text('High slots:'),
                           ...showHigh(),
                         ],
                       ),
                       Row(
+                        spacing: 7,
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
+                          Text('Medium slots:'),
                           ...showMed(),
                         ],
                       ),
                       Row(
+                        spacing: 5,
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
+                          Text('Low slots:'),
                           ...showLow(),
                         ],
                       ),
@@ -86,21 +91,47 @@ class _ShipScreenState extends State<ShipScreen> {
   
   void loadFromDB() async {
     printD('Loading frm DB');
-    var f = await sb.from('players_ships').select().eq('ship_id', widget.ship['id']);
-    if (f.isNotEmpty) fit = f.first;
-    printD(fit.toString());
+    //var f = await sb.from('players_ships').select().eq('ship_id', widget.ship['id']);
+    //printD('loaded $f');
+    //if (f.isNotEmpty && f.first['fit'] != null) fit = jsonDecode(f.first['fit']);
+    //printD(fit.toString());
     modules = await sb.from('modules').select();
     printD(modules.toString());
     setState(() {
       
     });
   }
-  
+
+  void save() {
+    printD('updating player ship ${widget.ship['id']}');
+    sb.from('players_ships').update({'fit': fit}).eq('id', widget.ship['id']).select().then(print);
+  }
+
   List<Widget> showHigh() {
-    return List.filled(
+    printD('show high slots with ${fit['high']}');
+    return List.generate(
       widget.ship['high'],
-      Container(width: 30, height: 30,
-        decoration: BoxDecoration(border: Border.all(width: 1,)),
+      (i) =>
+      DragTarget<int>(
+        builder: (context, candidateItems, rejectedItems) {
+          int id = fit['high']![i];
+          printD('show place $i with module id $id');
+          return id >= 0 ? picture(id) : Container(width: 30, height: 30,
+            decoration: BoxDecoration(border: Border.all(width: 1,)),
+          );
+        },
+        onWillAcceptWithDetails: (details) {
+          print(details.data);
+          return modules[details.data]['slot'] == 'high';
+        },
+        onAcceptWithDetails: (details) {
+          List<int> high = fit['high']!;
+          high[i] = details.data;
+          save();
+          setState(() {
+            fit['high'] = high;
+          });
+        },
       )
     );
   }
@@ -118,6 +149,22 @@ class _ShipScreenState extends State<ShipScreen> {
       )
     );
   }
+  
+  Widget picture(int id) {
+    Widget pic = Container(
+      decoration: BoxDecoration(
+        border: Border.all()
+      ),
+      width: 30,
+      height: 30,
+      child: Center(child: Text(modules[id]['id'].toString())),
+    );
+    return Draggable<int>(
+      feedback: Material(child: pic),
+      data: id,
+      childWhenDragging: pic,
+      child: pic,
+    );
 
-
+  }
 }
