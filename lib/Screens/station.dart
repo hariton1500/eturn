@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:eturn/Screens/fraction.dart';
 import 'package:eturn/funcs.dart';
 import 'package:eturn/globals.dart';
 import 'package:eturn/models/socket.dart';
@@ -54,17 +55,20 @@ class _StationScreenState extends State<StationScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  ...fractions.map((f) => Container(
-                    decoration: BoxDecoration(
-                      color: Colors.blue,
-                      border: Border.all(
-                        color: Colors.black
+                  ...fractions.map((f) => ElevatedButton(
+                    onPressed: () {Navigator.of(context).push(MaterialPageRoute(builder: (context) => FractionScreen(f: f,)));},
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.blue,
+                        border: Border.all(
+                          color: Colors.black
+                        )
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(f['name']),
                       )
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(f['name']),
-                    )
                   )),
                   //if ((state.firstWhere((s) => s['fraction_id'] == f['id'])).isNotEmpty) ElevatedButton(onPressed: () {}, child: Text('Take First Ship'))
                 ],
@@ -87,7 +91,7 @@ class _StationScreenState extends State<StationScreen> {
     });
 
     printD('requesting players_progress');
-    List<Map<String, dynamic>> request = await sb.from('players_progress').select().eq('email', data['player_id']);
+    List<Map<String, dynamic>> request = await sb.from('players_progress').select().eq('id', me!.id);
     printD(request.toString());
     if (request.isNotEmpty) {
       setState(() {
@@ -96,7 +100,7 @@ class _StationScreenState extends State<StationScreen> {
     }
 
     printD('requesting player_ships for player ${data['player_id']}');
-    List<Map<String, dynamic>> playerShipsRequest = await sb.from('player_ships').select().eq('email', data['player_id']);
+    List<Map<String, dynamic>> playerShipsRequest = await sb.from('players_ships').select().eq('player_id', me!.id);
     printD(playerShipsRequest.toString());
     setState(() {
       playerShips = playerShipsRequest;

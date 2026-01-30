@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:eturn/Screens/station.dart';
+import 'package:eturn/globals.dart';
+import 'package:eturn/models/player.dart';
 import 'package:eturn/models/socket.dart';
 import 'package:flutter/material.dart';
 
@@ -27,6 +29,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
 
       if (event['category'] == 'connection' && event['type'] == 'login' && event['result']) {
+        me = Player(id: event['player']['id']); //;
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const StationScreen()),
