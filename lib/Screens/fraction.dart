@@ -13,7 +13,8 @@ class FractionScreen extends StatefulWidget {
 
 class _FractionScreenState extends State<FractionScreen> {
 
-  List<Map<String, dynamic>> types = [], ships = [], myShips = [];
+  List<Map<String, dynamic>> types = [], ships = [];
+  List<Map<int, String>> myShips = [];
   
   @override
   void initState() {
@@ -43,12 +44,18 @@ class _FractionScreenState extends State<FractionScreen> {
                           //sending();
                           var addingShip = (await sb.from('ships').select().eq('class_id', t['id']).eq('fraction_id', widget.f['id'])).first;
                           printD('adding $addingShip to hangar');
-                          setState(() {
-                            //myShips.add(addingShip);
-                            sb.from('players_ships').insert({'player_id': me?.id, 'ship_id': addingShip['id']}).select().then((ship) {
-                              myShips.add(ship.first);
-                            });
-                          });
+                          printD('adding new ship to DB');
+                          final dbShip = await sb.from('players_ships').insert({'player_id': me?.id, 'ship_id': addingShip['id']}).select();
+                          if (dbShip.isNotEmpty) {
+                            printD('creating fit for ship = ${dbShip.first}');
+                            final newFit = await sb.from('players_fits').insert({'players_ship_id': dbShip.first['id']}).select();
+                            if (newFit.isNotEmpty) {
+                              printD('created fit $newFit');
+                              setState(() {
+                                myShips.add({0: dbShip.first['name']});
+                              });
+                            }
+                          }
                         },
                         child: Text('add to hangar')
                       )
@@ -61,11 +68,15 @@ class _FractionScreenState extends State<FractionScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   ...myShips.map((ship) => ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).push(MaterialPageRoute(builder: (context) => ShipScreen(ship: ship)));
+                    onPressed: () async {
+                      final id = ship.keys.first;
+                      final shipDB = await sb.from('players_ships').select().eq('id', id);
+                      if (shipDB.isNotEmpty) {
+                        Navigator.of(context).push(MaterialPageRoute(builder: (context) => ShipScreen(ship: (shipDB.first))));
+                      }
                     },
-                    child: Text(ship['name']
-                  )))
+                    child: Text(ship.values.first)
+                  ))
                 ],
               )
             ],
@@ -78,10 +89,21 @@ class _FractionScreenState extends State<FractionScreen> {
   void loadFromDB() async {
     printD('requesting ship_types for player ${me?.id}');
     types = await sb.from('ship_types').select();
+    printD(types.toString());
 
     printD('requesting my ships for player ${me?.id}');
-    myShips = await sb.from('players_ships').select().eq('player_id', me!.id);
-
+    final myShipsDB = await sb.from('players_ships').select().eq('player_id', me!.id);
+    printD(myShipsDB.toString());
+    if (myShipsDB.isNotEmpty) {
+      for (var myShipDB in myShipsDB) {
+        final shipDB = await sb.from('ships').select().eq('id', myShipDB['ship_id']);
+        if (shipDB.isNotEmpty) {
+          myShips.add({myShipDB['id']: shipDB.first['name']});
+        }
+      }
+      
+    }
+    printD(myShips.toString());
     setState(() {
       
     });

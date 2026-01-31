@@ -112,7 +112,11 @@ class _StationScreenState extends State<StationScreen> {
   Widget showHangar() {
     return Wrap(
       children: [
-        ...playerShips.map((ship) => Text(ship['ship_id']))
+        ...playerShips.map((ship) => Container(
+          //color: Colors.yellow,
+          decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.yellow, border: Border.all()),
+          child: Center(child: Text(ship['ship_id'].toString()))
+        ))
       ],
     );
   }

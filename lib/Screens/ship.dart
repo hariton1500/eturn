@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:eturn/funcs.dart';
 import 'package:eturn/globals.dart';
 import 'package:flutter/material.dart';
@@ -11,15 +13,16 @@ class ShipScreen extends StatefulWidget {
 
 class _ShipScreenState extends State<ShipScreen> {
 
-  Map<String, List<int>> fit = {};
+  Map<String, dynamic> fit = {}, ship = {'high': 0, 'med': 0, 'low': 0};
   List<Map<String, dynamic>> modules = [];
+  int? draggingModuleId;
 
   @override
   void initState() {
     super.initState();
-    fit['high'] = List.filled(widget.ship['high'], -1);
-    fit['med'] = List.filled(widget.ship['med'], -1);
-    fit['low'] = List.filled(widget.ship['low'], -1);
+    //fit['high'] = List.filled(widget.ship['high'], -1);
+    //fit['med'] = List.filled(widget.ship['med'], -1);
+    //fit['low'] = List.filled(widget.ship['low'], -1);
     loadFromDB();
   }
 
@@ -27,7 +30,7 @@ class _ShipScreenState extends State<ShipScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.ship['name']),
+        title: Text(ship['name'].toString()),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -45,8 +48,8 @@ class _ShipScreenState extends State<ShipScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         spacing: 10,
                         children: [
-                          Text(m['name']),
-                          picture(modules.indexOf(m))
+                          Text(m['name'].toString()),
+                          picture(m['id'])
                         ],
                       ))
                     ],
@@ -90,13 +93,17 @@ class _ShipScreenState extends State<ShipScreen> {
   }
   
   void loadFromDB() async {
-    printD('Loading frm DB');
-    //var f = await sb.from('players_ships').select().eq('ship_id', widget.ship['id']);
-    //printD('loaded $f');
-    //if (f.isNotEmpty && f.first['fit'] != null) fit = jsonDecode(f.first['fit']);
-    //printD(fit.toString());
+    printD('Loading from DB for player_ship ${widget.ship}');
     modules = await sb.from('modules').select();
     printD(modules.toString());
+    final shipDB = await sb.from('ships').select().eq('id', widget.ship['ship_id']);
+    if (shipDB.isNotEmpty) {
+      ship = shipDB.first;
+    }
+    final fits = await sb.from('players_fits').select().eq('players_ship_id', widget.ship['id']);
+    if (fits.isNotEmpty) {
+      fit = fits.first;
+    }
     setState(() {
       
     });
@@ -108,28 +115,47 @@ class _ShipScreenState extends State<ShipScreen> {
   }
 
   List<Widget> showHigh() {
+    /*
+    table players_fits (
+      id bigint,
+      created_at timestamp,
+      players_ship_id bigint,
+      low json  default '{}'::json,
+      med json  default '{}'::json,
+      high json  default '{}'::json,
+      foreign KEY (players_ship_id) references players_ships (id) on update CASCADE on delete CASCADE
+    ) TABLESPACE pg_default;
+    */
+    printD('ship:\n$ship');
+    if (fit['high'] == null) fit['high'] = '{}';
     printD('show high slots with ${fit['high']}');
+    var decodedSlots = jsonDecode(fit['high']) as Map<String, dynamic>;
+    printD('decoded high slots:\n$decodedSlots');
     return List.generate(
-      widget.ship['high'],
+      ship['high'],
       (i) =>
       DragTarget<int>(
         builder: (context, candidateItems, rejectedItems) {
-          int id = fit['high']![i];
-          printD('show place $i with module id $id');
-          return id >= 0 ? picture(id) : Container(width: 30, height: 30,
-            decoration: BoxDecoration(border: Border.all(width: 1,)),
-          );
+          //int? moduleId = draggingModuleId;
+          printD('show place $i with module id $draggingModuleId');
+          printD('candidates:\n$candidateItems');
+          return draggingModuleId != null ? picture(draggingModuleId!) : emptySlot();
         },
+        //details is module index of all modules list
         onWillAcceptWithDetails: (details) {
-          print(details.data);
-          return modules[details.data]['slot'] == 'high';
+          printD(details.data.toString());
+          //return true if this module type for high slot
+          final id = details.data;
+          return modules.firstWhere((m) => m['id'] == id)['slot'] == 'high';
         },
         onAcceptWithDetails: (details) {
-          List<int> high = fit['high']!;
-          high[i] = details.data;
+          //List<int> high = fit['high']!;
+          //high[i] = details.data;
+          decodedSlots['$i'] = details;
+          fit['high'] = jsonEncode(decodedSlots);
           save();
           setState(() {
-            fit['high'] = high;
+            //fit['high'] = high;
           });
         },
       )
@@ -137,14 +163,14 @@ class _ShipScreenState extends State<ShipScreen> {
   }
 
   List<Widget> showMed() {
-    return List.filled(widget.ship['med'], Container(width: 30, height: 30,
+    return List.filled(ship['med'], Container(width: 30, height: 30,
         decoration: BoxDecoration(border: Border.all(width: 1,)),
       )
     );
   }
 
   List<Widget> showLow() {
-    return List.filled(widget.ship['low'], Container(width: 30, height: 30,
+    return List.filled(ship['low'], Container(width: 30, height: 30,
         decoration: BoxDecoration(border: Border.all(width: 1,)),
       )
     );
@@ -157,14 +183,23 @@ class _ShipScreenState extends State<ShipScreen> {
       ),
       width: 30,
       height: 30,
-      child: Center(child: Text(modules[id]['id'].toString())),
+      child: Center(child: Text(id.toString())),
     );
     return Draggable<int>(
+      onDragStarted: () {
+        draggingModuleId = id;
+      },
       feedback: Material(child: pic),
       data: id,
       childWhenDragging: pic,
       child: pic,
     );
 
+  }
+  
+  Widget emptySlot() {
+    return Container(width: 30, height: 30,
+      decoration: BoxDecoration(border: Border.all(width: 1,)),
+    );
   }
 }
