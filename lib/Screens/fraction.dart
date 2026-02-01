@@ -14,7 +14,7 @@ class FractionScreen extends StatefulWidget {
 class _FractionScreenState extends State<FractionScreen> {
 
   List<Map<String, dynamic>> types = [], ships = [];
-  List<Map<int, String>> myShips = [];
+  List<Map<String, dynamic>> myShips = [];
   
   @override
   void initState() {
@@ -40,19 +40,19 @@ class _FractionScreenState extends State<FractionScreen> {
                       Text(t['name']),
                       ElevatedButton(
                         onPressed: () async {
-                          //send to server add ship to hangar
-                          //sending();
+                          printD('get first ship from fraction id ${widget.f['id']}');
                           var addingShip = (await sb.from('ships').select().eq('class_id', t['id']).eq('fraction_id', widget.f['id'])).first;
                           printD('adding $addingShip to hangar');
-                          printD('adding new ship to DB');
+                          printD('adding ship id ${addingShip['id']} to players_ships for player id ${me?.id}');
                           final dbShip = await sb.from('players_ships').insert({'player_id': me?.id, 'ship_id': addingShip['id']}).select();
                           if (dbShip.isNotEmpty) {
-                            printD('creating fit for ship = ${dbShip.first}');
+                            printD('added to players_ships is ${dbShip.first}');
+                            printD('adding fit for players_ship_id ${dbShip.first['id']}');
                             final newFit = await sb.from('players_fits').insert({'players_ship_id': dbShip.first['id']}).select();
                             if (newFit.isNotEmpty) {
-                              printD('created fit $newFit');
+                              printD('created fit ${newFit.first}');
                               setState(() {
-                                myShips.add({0: dbShip.first['name']});
+                                myShips.add(addingShip);
                               });
                             }
                           }
@@ -67,16 +67,25 @@ class _FractionScreenState extends State<FractionScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  ...myShips.map((ship) => ElevatedButton(
-                    onPressed: () async {
-                      final id = ship.keys.first;
-                      final shipDB = await sb.from('players_ships').select().eq('id', id);
-                      if (shipDB.isNotEmpty) {
-                        Navigator.of(context).push(MaterialPageRoute(builder: (context) => ShipScreen(ship: (shipDB.first))));
+                  ...myShips.map((ship) {
+                    printD('get ship data from ships for ship id ${ship['ship_id']}');
+                    final shipDB = sb.from('ships').select().eq('id', ship['ship_id']);
+                    return FutureBuilder(
+                      future: shipDB,
+                      builder: (context, asyncSnapshot) {
+                        if (asyncSnapshot.hasData) {
+                          return ElevatedButton(
+                            onPressed: () async {
+                              Navigator.of(context).push(MaterialPageRoute(builder: (context) => ShipScreen(ship: (ship))));
+                            },
+                            child: Text(asyncSnapshot.data!.first['name'].toString())
+                          );
+                        } else {
+                          return Text('');
+                        }
                       }
-                    },
-                    child: Text(ship.values.first)
-                  ))
+                    );
+                  })
                 ],
               )
             ],
@@ -92,20 +101,18 @@ class _FractionScreenState extends State<FractionScreen> {
     printD(types.toString());
 
     printD('requesting my ships for player ${me?.id}');
-    final myShipsDB = await sb.from('players_ships').select().eq('player_id', me!.id);
-    printD(myShipsDB.toString());
-    if (myShipsDB.isNotEmpty) {
-      for (var myShipDB in myShipsDB) {
+    myShips = await sb.from('players_ships').select().eq('player_id', me!.id);
+    printD(myShips.toString());
+    /*
+    if (myShips.isNotEmpty) {
+      for (var myShipDB in myShips) {
         final shipDB = await sb.from('ships').select().eq('id', myShipDB['ship_id']);
         if (shipDB.isNotEmpty) {
           myShips.add({myShipDB['id']: shipDB.first['name']});
         }
       }
-      
     }
-    printD(myShips.toString());
-    setState(() {
-      
-    });
+    printD(myShips.toString());*/
+    setState(() {});
   }
 }
