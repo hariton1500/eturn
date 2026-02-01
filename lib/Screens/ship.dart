@@ -13,16 +13,13 @@ class ShipScreen extends StatefulWidget {
 
 class _ShipScreenState extends State<ShipScreen> {
 
-  Map<String, dynamic> fit = {}, ship = {'high': 0, 'med': 0, 'low': 0};
+  Map<String, dynamic> fit = {}, shipDB ={};
   List<Map<String, dynamic>> modules = [];
   int? draggingModuleId;
 
   @override
   void initState() {
     super.initState();
-    //fit['high'] = List.filled(widget.ship['high'], -1);
-    //fit['med'] = List.filled(widget.ship['med'], -1);
-    //fit['low'] = List.filled(widget.ship['low'], -1);
     loadFromDB();
   }
 
@@ -30,7 +27,7 @@ class _ShipScreenState extends State<ShipScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(ship['name'].toString()),
+        title: Text(shipDB['name'] ?? ''),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -95,18 +92,18 @@ class _ShipScreenState extends State<ShipScreen> {
   void loadFromDB() async {
     printD('Loading from DB for player_ship ${widget.ship}');
     modules = await sb.from('modules').select();
-    printD(modules.toString());
-    final shipDB = await sb.from('ships').select().eq('id', widget.ship['ship_id']);
-    if (shipDB.isNotEmpty) {
-      ship = shipDB.first;
+    printD('loaded modules:\n$modules');
+    final shipDBData = await sb.from('ships').select().eq('id', widget.ship['ship_id']);
+    if (shipDBData.isNotEmpty) {
+      shipDB = shipDBData.first;
     }
-    final fits = await sb.from('players_fits').select().eq('players_ship_id', widget.ship['id']);
+    printD('loaded ship data: $shipDB');
+    final fits = await sb.from('players_fits').select().eq('players_ship_id', widget.ship['ship_id']);
     if (fits.isNotEmpty) {
       fit = fits.first;
     }
-    setState(() {
-      
-    });
+    printD('loaded fit data: $fit');
+    setState(() {});
   }
 
   void save() {
@@ -126,24 +123,24 @@ class _ShipScreenState extends State<ShipScreen> {
       foreign KEY (players_ship_id) references players_ships (id) on update CASCADE on delete CASCADE
     ) TABLESPACE pg_default;
     */
-    printD('ship:\n$ship');
-    if (fit['high'] == null) fit['high'] = '{}';
-    printD('show high slots with ${fit['high']}');
-    var decodedSlots = jsonDecode(fit['high']) as Map<String, dynamic>;
-    printD('decoded high slots:\n$decodedSlots');
+    printD('[render] draw ship:\n$shipDB');
+    //if (fit['high'] == null) fit['high'] = '{}';
+    printD('[render]show ${shipDB['high']} high slots with ${fit['high']}');
+    //var decodedSlots = jsonDecode(fit['high']) as Map<String, dynamic>;
+    //printD('[render]decoded high slots:\n$decodedSlots');
     return List.generate(
-      ship['high'],
+      shipDB['high'],
       (i) =>
       DragTarget<int>(
         builder: (context, candidateItems, rejectedItems) {
           //int? moduleId = draggingModuleId;
-          printD('show place $i with module id $draggingModuleId');
-          printD('candidates:\n$candidateItems');
-          return draggingModuleId != null ? picture(draggingModuleId!) : emptySlot();
+          printD('[render]show place $i with module ${fit['high']?['$i'].toString()}');
+          //printD('[render]candidates:\n$candidateItems');
+          return fit['high']?['$i'] != null ? picture(fit['high']['$i']) : emptySlot();
         },
         //details is module index of all modules list
         onWillAcceptWithDetails: (details) {
-          printD(details.data.toString());
+          printD('[render] onWillAcceptWithDetails: ${details.data}');
           //return true if this module type for high slot
           final id = details.data;
           return modules.firstWhere((m) => m['id'] == id)['slot'] == 'high';
@@ -151,26 +148,28 @@ class _ShipScreenState extends State<ShipScreen> {
         onAcceptWithDetails: (details) {
           //List<int> high = fit['high']!;
           //high[i] = details.data;
-          decodedSlots['$i'] = details;
-          fit['high'] = jsonEncode(decodedSlots);
-          save();
+          //fit['high'] = jsonEncode(decodedSlots);
+          printD('[render]droped module id ${details.data} on high module index $i');
+          printD('[render]current fit["high"] is ${fit['high']} and it is type ${fit['high'].runtimeType}');
+          if (fit['high'] == null) fit['high'] = <Map<String, dynamic>>{};
           setState(() {
-            //fit['high'] = high;
+            fit['high']['$i'] = details.data;
           });
+          //save();
         },
       )
     );
   }
 
   List<Widget> showMed() {
-    return List.filled(ship['med'], Container(width: 30, height: 30,
+    return List.filled(shipDB['med'], Container(width: 30, height: 30,
         decoration: BoxDecoration(border: Border.all(width: 1,)),
       )
     );
   }
 
   List<Widget> showLow() {
-    return List.filled(ship['low'], Container(width: 30, height: 30,
+    return List.filled(shipDB['low'], Container(width: 30, height: 30,
         decoration: BoxDecoration(border: Border.all(width: 1,)),
       )
     );
