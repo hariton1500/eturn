@@ -59,7 +59,7 @@ class _ShipScreenState extends State<ShipScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           Text('High slots:'),
-                          ...showHigh(),
+                          if (fit['high'] != null)...showHigh(),
                         ],
                       ),
                       Row(
@@ -67,7 +67,7 @@ class _ShipScreenState extends State<ShipScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           Text('Medium slots:'),
-                          ...showMed(),
+                          if (fit['med'] != null)...showMed(),
                         ],
                       ),
                       Row(
@@ -75,7 +75,7 @@ class _ShipScreenState extends State<ShipScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           Text('Low slots:'),
-                          ...showLow(),
+                          if (fit['low'] != null)...showLow(),
                         ],
                       ),
                     ],
@@ -98,17 +98,17 @@ class _ShipScreenState extends State<ShipScreen> {
       shipDB = shipDBData.first;
     }
     printD('loaded ship data: $shipDB');
-    final fits = await sb.from('players_fits').select().eq('players_ship_id', widget.ship['ship_id']);
-    if (fits.isNotEmpty) {
-      fit = fits.first;
-    }
+    printD('get fit for ship ${widget.ship}');
+    fit = await sb.from('players_fits').select().eq('players_ship_id', widget.ship['id']).limit(1).single();
     printD('loaded fit data: $fit');
+    printD('fit[high] = ${fit['high']}');
     setState(() {});
   }
 
-  void save() {
-    printD('updating player ship ${widget.ship['id']}');
-    sb.from('players_ships').update({'fit': fit}).eq('id', widget.ship['id']).select().then(print);
+  void save() async {
+    printD('updating player ships fit ${widget.ship}');
+    final res = await sb.from('players_fits').update({'high': fit['high'], 'med': fit['med'], 'low': fit['low']}).eq('id', fit['id']).select();
+    printD('result:\n$res');
   }
 
   List<Widget> showHigh() {
@@ -152,10 +152,11 @@ class _ShipScreenState extends State<ShipScreen> {
           printD('[render]droped module id ${details.data} on high module index $i');
           printD('[render]current fit["high"] is ${fit['high']} and it is type ${fit['high'].runtimeType}');
           if (fit['high'] == null) fit['high'] = <Map<String, dynamic>>{};
+          printD('now fit["high"] = ${fit['high']}');
           setState(() {
             fit['high']['$i'] = details.data;
           });
-          //save();
+          save();
         },
       )
     );
