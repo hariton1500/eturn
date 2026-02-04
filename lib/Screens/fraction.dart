@@ -14,7 +14,7 @@ class FractionScreen extends StatefulWidget {
 
 class _FractionScreenState extends State<FractionScreen> {
 
-  List<Map<String, dynamic>> types = [], ships = [];
+  List<Map<String, dynamic>> classes = [], ships = [];
   List<Map<String, dynamic>> myShips = [];
   List<ShipSB> typesDB = [];
   
@@ -37,13 +37,13 @@ class _FractionScreenState extends State<FractionScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  ...types.map((t) => Column(
+                  ...classes.map((cl) => Column(
                     children: [
-                      Text(t['name']),
+                      Text(cl['name']),
                       ElevatedButton(
                         onPressed: () async {
                           printD('get first ship from fraction id ${widget.f['id']}');
-                          var addingShip = (await sb.from('ships').select().eq('class_id', t['id']).eq('fraction_id', widget.f['id'])).first;
+                          var addingShip = (await sb.from('ships').select().eq('class_id', cl['id']).eq('fraction_id', widget.f['id'])).first;
                           printD('adding $addingShip to hangar');
                           printD('adding ship id ${addingShip['id']} to players_ships for player id ${me?.id}');
                           final playerShip = await sb.from('players_ships').insert({'player_id': me?.id, 'ship_id': addingShip['id']}).select();
@@ -99,8 +99,8 @@ class _FractionScreenState extends State<FractionScreen> {
   
   void loadFromDB() async {
     printD('requesting ship_types for player ${me?.id}');
-    types = await sb.from('ship_types').select();
-    printD('result:\n$types');
+    classes = await sb.from('ship_classes').select();
+    printD('result:\n$classes');
     //typesDB = types.map((e) => ShipSB().fromMap(e)).toList();
 
     printD('requesting my ships for player ${me?.id}');

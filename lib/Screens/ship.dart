@@ -1,7 +1,9 @@
 import 'dart:convert';
 
+import 'package:eturn/Screens/lobby.dart';
 import 'package:eturn/funcs.dart';
 import 'package:eturn/globals.dart';
+import 'package:eturn/models/socket.dart';
 import 'package:flutter/material.dart';
 
 class ShipScreen extends StatefulWidget {
@@ -81,6 +83,13 @@ class _ShipScreenState extends State<ShipScreen> {
                     ],
                   )
                 ],
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  SocketService().send({'category': 'lobby', 'type': 'entered_to_lobby'});
+                  Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => LobbyScreen(playerShip: widget.ship, shipModel: shipDB)));
+                },
+                child: Text('Go to Lobby...'),
               )
             ]
           ),
