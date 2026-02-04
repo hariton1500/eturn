@@ -90,6 +90,7 @@ class _StationScreenState extends State<StationScreen> {
       fractions = fractionRequest;
     });
 
+    /*
     printD('requesting players_progress');
     List<Map<String, dynamic>> request = await sb.from('players_progress').select().eq('id', me!.id);
     printD(request.toString());
@@ -97,7 +98,7 @@ class _StationScreenState extends State<StationScreen> {
       setState(() {
         state = request;
       });
-    }
+    }*/
 
     printD('requesting player_ships for player ${data['player_id']}');
     List<Map<String, dynamic>> playerShipsRequest = await sb.from('players_ships').select().eq('player_id', me!.id);

@@ -1,7 +1,8 @@
 import 'dart:async';
 
-import 'package:eturn/BattleScreen/battlescreen.dart';
+import 'package:eturn/Screens/station.dart';
 import 'package:eturn/funcs.dart';
+import 'package:eturn/globals.dart';
 import 'package:eturn/models/socket.dart';
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
@@ -20,7 +21,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
 
   //    'ship_DB': shipDB,
   //    'ship_class': shipClass
-  List<Map<String, dynamic>> lobbyState = <Map<String, dynamic>>[];
+  List<Map<String, dynamic>> lobbyState = [], classes = [];
 
   @override
   void initState() {
@@ -29,11 +30,19 @@ class _LobbyScreenState extends State<LobbyScreen> {
     sub = SocketService().stream.listen((event) {
       printD('recieved from server:\n$event');
       if (event['category'] == 'lobby' && event['type'] == 'state') {
-        setState(() {
-          lobbyState = event['data'];
-        });
+        List<dynamic> data = event['data']['players_in_lobby'];
+        if (data.isNotEmpty) {
+          for (var element in data) {
+            printD(element.toString());
+            printD(element.runtimeType.toString());
+            lobbyState.add(element as Map<String, dynamic>);
+          }
+          setState(() {});
+        } 
       }
     });
+
+    loadFromDB();
 
     //sending data request
     //sending['type'] = 'get_state';
@@ -51,13 +60,22 @@ class _LobbyScreenState extends State<LobbyScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Lobby'),
+        actions: [
+          ElevatedButton(onPressed: () {
+            //send leave lobby command to server
+            SocketService().send({'category': 'lobby', 'type': 'leave_lobby'});
+            Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => StationScreen()),(Route<dynamic> route) => false);
+          },
+          child: Text('Leave lobby'))
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Center(
             child: Column(
               children: [
-                showPlayersInLobby()
+                //showPlayersInLobby(),
+                showByClass()
               ],
             ),
           ),
@@ -92,16 +110,44 @@ class _LobbyScreenState extends State<LobbyScreen> {
     }
   }
   
+  Widget showByClass() {
+    return Column(
+      spacing: 10,
+      children: [
+        if (classes.isNotEmpty) ...classes.map((cl) {
+          final i = lobbyState.where((s) => s['ship_class']['name'] == cl['name']).length;
+          return i > 0 ? Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            spacing: 5,
+            children: [
+              Text(cl['name']),
+              Text(i.toString())
+            ],
+          ) : Text('');
+        })
+      ],
+    );
+  }
   Widget showPlayersInLobby() {
     return Column(
+      //mainAxisAlignment: MainAxisAlignment.center,
+      //crossAxisAlignment: CrossAxisAlignment.center,
+      spacing: 10,
       children: [
-        ...lobbyState.map((player) => Row(
+        if (lobbyState.isNotEmpty) ...lobbyState.map((player) => Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          spacing: 5,
           children: [
-            Text(player['ship_DB']),
-            Text(player['ship_class'])
+            Text(player['ship_DB']['name'].toString()),
+            Text(player['ship_class']['name'].toString())
           ],
         ))
       ],
     );
+  }
+  
+  void loadFromDB() async {
+    classes = await sb.from('ship_classes').select();
+    setState(() {});
   }
 }

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:eturn/Screens/lobby.dart';
+import 'package:eturn/Screens/tournamentroom.dart';
 import 'package:eturn/funcs.dart';
 import 'package:eturn/globals.dart';
 import 'package:eturn/models/socket.dart';
@@ -35,6 +36,7 @@ class _ShipScreenState extends State<ShipScreen> {
         child: SingleChildScrollView(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            spacing: 30,
             children: [
               //Text(widget.ship.toString()),
               SizedBox(height: 50,),
@@ -86,11 +88,18 @@ class _ShipScreenState extends State<ShipScreen> {
               ),
               ElevatedButton(
                 onPressed: () {
-                  SocketService().send({'category': 'lobby', 'type': 'entered_to_lobby'});
-                  Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => LobbyScreen(playerShip: widget.ship, shipModel: shipDB)));
+                  SocketService().send({'category': 'lobby', 'type': 'entered_to_lobby', 'ship_id': shipDB['id']});
+                  Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => LobbyScreen(playerShip: widget.ship, shipModel: shipDB)),(Route<dynamic> route) => false);
                 },
                 child: Text('Go to Lobby...'),
-              )
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  SocketService().send({'category': 'tournament_room', 'type': 'entered_to_tournament_room', 'ship_id': shipDB['id']});
+                  Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => TournamentRoomScreen()));
+                },
+                child: Text('Go to tournaments room...'),
+              ),
             ]
           ),
         )
