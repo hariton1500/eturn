@@ -1,18 +1,19 @@
 import 'package:eturn/BattleScreen/Flame%20BattleWorld/ShipComponent.dart';
+import 'package:eturn/funcs.dart';
 import 'package:flame/game.dart';
 
 class BattleGame extends FlameGame {
   final Map<int, ShipComponent> ships = {};
 
-  void applySnapshot(Map<String, dynamic> snap) {
-    for (final s in snap['ships']) {
-      final id = s['id'];
-
+  void applySnapshot(Map<String, dynamic> data) {
+    for (final s in data['ships']) {
+      final id = s['ship']['id'];
+      printD('shipComponentID: $id');
       ships.putIfAbsent(
         id,
         () {
           final ship = ShipComponent(
-            teamId: s['teamId'],
+            teamId: data['team'],
           );
           add(ship);
           return ship;
@@ -20,9 +21,9 @@ class BattleGame extends FlameGame {
       );
 
       ships[id]!
-        ..position = Vector2(s['x'] * 20, s['y'] * 20)
-        ..hp = s['hp']
-        ..alive = s['alive'];
+        ..position = Vector2(data['pos']['x'], data['pos']['y'])
+        //..hp = s['hp']
+        ..alive = true;
     }
   }
 }

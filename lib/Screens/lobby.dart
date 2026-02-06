@@ -1,9 +1,12 @@
 import 'dart:async';
 
+import 'package:eturn/BattleScreen/battlescreen.dart';
+import 'package:eturn/Screens/battle.dart';
 import 'package:eturn/Screens/station.dart';
 import 'package:eturn/funcs.dart';
 import 'package:eturn/globals.dart';
 import 'package:eturn/models/socket.dart';
+import 'package:flame/game.dart' hide Route;
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -39,6 +42,12 @@ class _LobbyScreenState extends State<LobbyScreen> {
           }
           setState(() {});
         } 
+      }
+      if (event['category'] == 'battle' && event['type'] == 'start') {
+        final data = event['data'] as Map<String, dynamic>;
+        //me?.team = data['team'];
+        //me?.pos = Vector2(data['pos']['x'], data['pos']['y']);
+        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => BattleScreen2(initData: data,)));
       }
     });
 

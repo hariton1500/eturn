@@ -73,7 +73,9 @@ class _StationScreenState extends State<StationScreen> {
                   //if ((state.firstWhere((s) => s['fraction_id'] == f['id'])).isNotEmpty) ElevatedButton(onPressed: () {}, child: Text('Take First Ship'))
                 ],
               ),
-              showHangar()
+              //Container(height: 100,),
+              //Divider(),
+              //showHangar()
             ],
           ),
         )
@@ -111,9 +113,14 @@ class _StationScreenState extends State<StationScreen> {
   }
   
   Widget showHangar() {
-    return Wrap(
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      spacing: 10,
+      //runSpacing: 10,
       children: [
         ...playerShips.map((ship) => Container(
+          width: 60,
+          height: 60,
           //color: Colors.yellow,
           decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.yellow, border: Border.all()),
           child: Center(child: Text(ship['ship_id'].toString()))

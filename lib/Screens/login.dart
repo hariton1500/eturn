@@ -119,7 +119,7 @@ class _LoginScreenState extends State<LoginScreen> {
   
   void saveLogin() async {
     var shared = await SharedPreferences.getInstance();
-    logins[email!] = password!;
+    if (email != null && password != null) logins[email!] = password!;
     shared.setString('logins', jsonEncode(logins));
   }
 }

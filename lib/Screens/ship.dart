@@ -91,14 +91,14 @@ class _ShipScreenState extends State<ShipScreen> {
                   SocketService().send({'category': 'lobby', 'type': 'entered_to_lobby', 'ship_id': shipDB['id']});
                   Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => LobbyScreen(playerShip: widget.ship, shipModel: shipDB)),(Route<dynamic> route) => false);
                 },
-                child: Text('Go to Lobby...'),
+                child: Text('Go to Random Battle...'),
               ),
               ElevatedButton(
                 onPressed: () {
                   SocketService().send({'category': 'tournament_room', 'type': 'entered_to_tournament_room', 'ship_id': shipDB['id']});
                   Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => TournamentRoomScreen()));
                 },
-                child: Text('Go to tournaments room...'),
+                child: Text('Go to Tournaments Battle...'),
               ),
             ]
           ),

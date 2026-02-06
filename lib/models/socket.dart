@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:eturn/funcs.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class SocketService {
@@ -19,7 +20,7 @@ class SocketService {
     _channel = WebSocketChannel.connect(Uri.parse(url));
 
     _channel.stream.listen((data) {
-      print(data.toString());
+      //printD(data.toString());
       _controller.add(jsonDecode(data));
     });
   }

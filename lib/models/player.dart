@@ -1,4 +1,5 @@
 import 'package:eturn/globals.dart';
+import 'package:flame/game.dart';
 
 enum Categories {
   justLoggedIn,
@@ -13,6 +14,8 @@ class Player {
   String? teamId;
   bool ready = false;
   Map<String, dynamic> playerProgress = {};
+  int? team;
+  Vector2? pos;
 
   Player({
     required this.id,

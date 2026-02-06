@@ -1,29 +1,29 @@
 import 'dart:async';
-import 'dart:convert';
-
 import 'package:eturn/BattleScreen/battlegame.dart';
+import 'package:eturn/funcs.dart';
+import 'package:eturn/models/socket.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 
 class BattleScreen extends StatefulWidget {
-  const BattleScreen({super.key, required this.streamSubscription, required this.channel});
-  final StreamSubscription streamSubscription;
-  final WebSocketChannel channel;
+  const BattleScreen({super.key, required this.initData});
+  final Map<String, dynamic> initData;
 
   @override
   State<BattleScreen> createState() => _BattleScreenState();
 }
 
 class _BattleScreenState extends State<BattleScreen> {
-  late WebSocketChannel channel;
+  late StreamSubscription sub;
   late BattleGame game;
 
   @override
   void initState() {
     super.initState();
     game = BattleGame();
-    widget.streamSubscription.onData((s) => handleData(s));
+    handleData(widget.initData);
+    //sub.onData((s) => handleData(s));
+    sub = SocketService().stream.listen(handleData);
   }
 
   @override
@@ -32,19 +32,20 @@ class _BattleScreenState extends State<BattleScreen> {
       body: GameWidget(game: game),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          widget.channel.sink.add(jsonEncode({
+          SocketService().send({
             'cmd': 'attack',
             'shipId': 1,
             'targetId': 2,
-          }));
+          });
         },
         child: const Icon(Icons.flash_on),
       ),
     );
   }
 
-  void handleData(String data) {
-      final msg = jsonDecode(data);
-      game.applySnapshot(msg['snapshot']);
+  void handleData(Map<String, dynamic> data) {
+      //final msg = jsonDecode(data);
+      printD('applySnapshot');
+      game.applySnapshot(data);
   }
 }
