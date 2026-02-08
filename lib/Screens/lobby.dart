@@ -68,7 +68,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Lobby'),
+        title: Text('Lobby($me)'),
         actions: [
           ElevatedButton(onPressed: () {
             //send leave lobby command to server

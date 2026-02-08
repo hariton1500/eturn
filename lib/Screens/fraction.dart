@@ -45,8 +45,8 @@ class _FractionScreenState extends State<FractionScreen> {
                           printD('get first ship from fraction id ${widget.f['id']}');
                           var addingShip = (await sb.from('ships').select().eq('class_id', cl['id']).eq('fraction_id', widget.f['id'])).first;
                           printD('adding $addingShip to hangar');
-                          printD('adding ship id ${addingShip['id']} to players_ships for player id ${me?.id}');
-                          final playerShip = await sb.from('players_ships').insert({'player_id': me?.id, 'ship_id': addingShip['id']}).select();
+                          printD('adding ship id ${addingShip['id']} to players_ships for player id ${me['id']}');
+                          final playerShip = await sb.from('players_ships').insert({'player_id': me['id'], 'ship_id': addingShip['id']}).select();
                           if (playerShip.isNotEmpty) {
                             printD('added to players_ships is ${playerShip.first}');
                             printD('adding fit for players_ship_id ${playerShip.first['id']}');
@@ -98,13 +98,13 @@ class _FractionScreenState extends State<FractionScreen> {
   }
   
   void loadFromDB() async {
-    printD('requesting ship_types for player ${me?.id}');
+    printD('requesting ship_types for player ${me['id']}');
     classes = await sb.from('ship_classes').select();
     printD('result:\n$classes');
     //typesDB = types.map((e) => ShipSB().fromMap(e)).toList();
 
-    printD('requesting my ships for player ${me?.id}');
-    myShips = await sb.from('players_ships').select().eq('player_id', me!.id);
+    printD('requesting my ships for player ${me['id']}');
+    myShips = await sb.from('players_ships').select().eq('player_id', me['id']);
     printD(myShips.toString());
     /*
     if (myShips.isNotEmpty) {

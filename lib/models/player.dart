@@ -28,6 +28,6 @@ class Player {
 
   @override
   String toString() {
-    return '$id; $category';
+    return 'id = $id; $category';
   }
 }

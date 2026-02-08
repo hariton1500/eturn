@@ -35,7 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
 
       if (event['category'] == 'connection' && event['type'] == 'login' && event['result']) {
-        me = Player(id: event['player']['id']); //;
+        me['id'] = event['player']['id']; //;
         saveLogin(); 
         Navigator.pushReplacement(
           context,
@@ -109,7 +109,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (strings != null && strings.isNotEmpty) {
       setState(() {
         Map<String, dynamic> decoded = jsonDecode(strings);
-        print(decoded );
+        printD(decoded.toString());
         decoded.forEach((s, d) {
           logins[s] = d.toString();
         });

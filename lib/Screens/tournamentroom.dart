@@ -29,7 +29,7 @@ class _TournamentRoomScreenState extends State<TournamentRoomScreen> {
     sub = SocketService().stream.listen((event) {
       printD('recieved from server:\n$event');
       if (event['category'] == 'tournament_room' && event['type'] == 'state') {
-        if (event['data']['player_id'] == me?.id) {
+        if (event['data']['player_id'] == me['id']) {
           setState(() {
             isReady = event['data']['change_ready'];
           });

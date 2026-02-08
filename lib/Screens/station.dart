@@ -103,7 +103,7 @@ class _StationScreenState extends State<StationScreen> {
     }*/
 
     printD('requesting player_ships for player ${data['player_id']}');
-    List<Map<String, dynamic>> playerShipsRequest = await sb.from('players_ships').select().eq('player_id', me!.id);
+    List<Map<String, dynamic>> playerShipsRequest = await sb.from('players_ships').select().eq('player_id', me['id']);
     printD(playerShipsRequest.toString());
     setState(() {
       playerShips = playerShipsRequest;
