@@ -1,12 +1,10 @@
 import 'dart:async';
 
-import 'package:eturn/BattleScreen/battlescreen.dart';
 import 'package:eturn/Screens/battle.dart';
 import 'package:eturn/Screens/station.dart';
 import 'package:eturn/funcs.dart';
 import 'package:eturn/globals.dart';
 import 'package:eturn/models/socket.dart';
-import 'package:flame/game.dart' hide Route;
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -47,6 +45,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
         //final data = event['data'] as Map<String, dynamic>;
         //me?.team = data['team'];
         //me?.pos = Vector2(data['pos']['x'], data['pos']['y']);
+        // ignore: use_build_context_synchronously
         Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => BattleScreen2()));
       }
     });
@@ -97,7 +96,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
     try {
       switch (msg['type']) {
         case 'lobby_state':
-          final locked = msg['locked'];
+          //final locked = msg['locked'];
           //players.clear();
           //players.addAll((msg['players'] as List).map((e) => {'id': e['id'], 'ready': e['ready']}));// = msg['players'] as Map<String, dynamic>;
           setState(() {
@@ -115,7 +114,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
         default:
       }
     } catch (e) {
-      print(e);
+      printD(e.toString());
     }
   }
   

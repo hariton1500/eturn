@@ -1,4 +1,4 @@
-import 'package:eturn/BattleScreen/Flame%20BattleWorld/ShipComponent.dart';
+import 'package:eturn/BattleScreen/FlameBattleWorld/shipComponent.dart';
 import 'package:eturn/funcs.dart';
 import 'package:flame/game.dart';
 

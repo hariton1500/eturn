@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'package:eturn/Screens/station.dart';
 import 'package:eturn/funcs.dart';
 import 'package:eturn/globals.dart';
-import 'package:eturn/models/player.dart';
 import 'package:eturn/models/socket.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';

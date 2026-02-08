@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:eturn/Screens/lobby.dart';
 import 'package:eturn/Screens/tournamentroom.dart';
 import 'package:eturn/funcs.dart';

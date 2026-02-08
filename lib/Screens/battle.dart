@@ -4,6 +4,7 @@ import 'package:eturn/funcs.dart';
 import 'package:eturn/globals.dart';
 import 'package:eturn/models/socket.dart';
 import 'package:flame/components.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 class BattleScreen2 extends StatefulWidget {
@@ -21,9 +22,9 @@ class _BattleScreen2State extends State<BattleScreen2> {
   Vector2 world00 = Vector2(0, 0), world11 = Vector2(200000, 200000);
   late Vector2 screen00 = Vector2.zero(), screen11;
   double shiftX = 0, shiftY = 0;
-  double rollZoom = 0.9;
+  double rollZoom = 1;
   Offset lastTapDown = Offset.zero, zoom = Offset(1, 1);
-  double zoomZ = 1 / 200000, camX = 0, camY = 0, screenCX = 0, screenCY = 0;
+  double zoomZ = 800 / 200000, camX = 0, camY = 0, screenCX = 0, screenCY = 0;
 
 
   @override
@@ -38,14 +39,18 @@ class _BattleScreen2State extends State<BattleScreen2> {
     //screen11 = Vector2(MediaQuery.of(context).size.width, MediaQuery.of(context).size.height);
     screenCX = MediaQuery.of(context).size.width / 2;
     screenCY = MediaQuery.of(context).size.height / 2;
-    zoomZ = 1 / 400000;
-    //zoom = Offset(screen11.x / world11.x, screen11.y / world11.y);
+    zoomZ = MediaQuery.of(context).size.width / 200000 * rollZoom;
+    var myShip = ships.entries.firstWhere((element) => element.key == me['id'], orElse: () => MapEntry(0, {}),);
+    if (myShip.value.isNotEmpty) {
+      camX = myShip.value['ship']['pos']['x'];
+      camY = myShip.value['ship']['pos']['y'];
+    }
     printD(lastTapDown.toString());
     return Scaffold(
       appBar: AppBar(
         titleSpacing: 10,
         toolbarHeight: 100,
-        title: Text('$ships/n$me ${camX + (lastTapDown.dx - screenCX) / zoomZ}'),
+        title: Text('$me ${camX + (lastTapDown.dx - screenCX) / zoomZ} ${camY + (lastTapDown.dy - screenCY) / zoomZ}'),
       ),
       body: SafeArea(
         child: Center(
@@ -56,32 +61,46 @@ class _BattleScreen2State extends State<BattleScreen2> {
             },
             onTapDown: (details) {
               printD('on tapdown $details');
-              lastTapDown = details.globalPosition;
+              lastTapDown = details.localPosition;
             },
-            child: Container(
-              color: Colors.black,
-              child: Stack(
-                children: [
-                  ...ships.entries.map((s) {
-                    //printD(s.toString());
-                    //printD((s.value['ship']['pos']['x'] * screen11.x / world11.x).toString());
-                    //printD(me.toString());
-                    if (s.key == me['id']) {
-                      //shiftX = - (s.value['ship']['pos']['x']) + screen11.x / 2;
-                      //shiftY = - (s.value['ship']['pos']['y']) + screen11.y / 2;
-                      camX = s.value['ship']['pos']['x'];
-                      camY = s.value['ship']['pos']['y'];
+            child: Listener(
+              onPointerSignal: (event) {
+                if (event is PointerScrollEvent) {
+                  printD(event.scrollDelta.dy.toString());
+                  setState(() {
+                    if (event.scrollDelta.dy < 0) {
+                      rollZoom *= event.scrollDelta.dy.abs() / 2;
+                    } else {
+                      rollZoom /= event.scrollDelta.dy.abs() / 2;
                     }
-                    //Vector2 zoom = Vector2(screen11.x / world11.x, screen11.y / world11.y) * 0.9;
-                    //Vector2 ship = Vector2((s.value['ship']['pos']['x'] + shiftX) * zoom.x + screen11.x / 2, (s.value['ship']['pos']['y'] + shiftY) * zoom.y + screen11.y / 2);
-                    //printD('ships draw at $ship with zoom $zoom');
-                    return Positioned(
-                      left: (s.value['ship']['pos']['x'] - camX) * zoomZ + screenCX,//ship.x,
-                      top: (s.value['ship']['pos']['y'] - camY) * zoomZ + screenCY,//ship.y,
-                      child: drawShip(s)
-                    );}
-                  )
-                ],
+                  });
+                }
+              },
+              child: Container(
+                color: Colors.black,
+                child: Stack(
+                  children: [
+                    ...ships.entries.map((s) {
+                      double shipX = s.value['ship']['pos']['x'];
+                      double shipY = s.value['ship']['pos']['y'];
+                      int shipRadius = s.value['ship_DB']['radius'];
+                      //printD(s.toString());
+                      //printD((s.value['ship']['pos']['x'] * screen11.x / world11.x).toString());
+                      //printD(me.toString());
+                      /*
+                      if (s.key == me['id']) {
+                        camX = shipX;
+                        camY = shipY;
+                      }*/
+                      //printD('ships draw at $ship with zoom $zoom');
+                      return Positioned(
+                        left: (shipX - camX) * zoomZ + screenCX - shipRadius * zoomZ / 3.9,//ship.x,
+                        top: (shipY - camY) * zoomZ + screenCY - shipRadius * zoomZ / 3.9,//ship.y,
+                        child: drawShip(s)
+                      );}
+                    )
+                  ],
+                ),
               ),
             ),
           ),
@@ -98,19 +117,18 @@ class _BattleScreen2State extends State<BattleScreen2> {
       printD('ship=\n$player');
       setState(() {
         player['ship_DB']['team'] = player['ship']['team'];
-        //player['ship_DB']['pos'] = player['ship']['pos'];
-        //player['ship_DB']['ship_class'] = player['ship_class'];
         ships[id] = player;
       });
     }
   }
   
   Widget drawShip(MapEntry<int, Map<String, dynamic>> s) {
-    final id = s.key;
-    final ship = s.value;
+    //final id = s.key;
+    //final ship = s.value;
+    int shipRadius = s.value['ship_DB']['radius'];
     return Container(
-      width: 30,
-      height: 30,
+      width: 10,//shipRadius * zoomZ,
+      height: 10,//shipRadius * zoomZ,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: Colors.white
@@ -121,7 +139,7 @@ class _BattleScreen2State extends State<BattleScreen2> {
   }
   
   void sendMoveToCommand() {
-    Offset moveTo = Offset(lastTapDown.dx * (world11.x / screen11.x), lastTapDown.dy * (world11.y / screen11.y));
+    Offset moveTo = Offset(camX + (lastTapDown.dx - screenCX) / zoomZ, camY + (lastTapDown.dy - screenCY) / zoomZ);
     final Map<String, dynamic> command = {'category': 'battle', 'type': 'command', 'command': 'move_to', 'data': {'x': moveTo.dx, 'y': moveTo.dy}};
     
     SocketService().send(command);
