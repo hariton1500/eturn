@@ -44,10 +44,10 @@ class _LobbyScreenState extends State<LobbyScreen> {
         } 
       }
       if (event['category'] == 'battle' && event['type'] == 'start') {
-        final data = event['data'] as Map<String, dynamic>;
+        //final data = event['data'] as Map<String, dynamic>;
         //me?.team = data['team'];
         //me?.pos = Vector2(data['pos']['x'], data['pos']['y']);
-        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => BattleScreen2(initData: data,)));
+        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => BattleScreen2()));
       }
     });
 
